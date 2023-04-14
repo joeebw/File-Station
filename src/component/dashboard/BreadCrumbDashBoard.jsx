@@ -44,34 +44,37 @@ function BreadCrumbDashBoard() {
   }, [])
 
   return (
-    <Breadcrumb aria-label="Default breadcrumb example">
-      <Breadcrumb.Item
-      >
-        <Link 
-          to={'/userinterface/root'}
-          className='text-lg'
-        >
-          Home
-        </Link>
-      </Breadcrumb.Item>
-
-      {navigationHistory.length > 0 && navigationHistory.map((element) => {
-        return( 
+    <div className='hidden sm:flex'>
+      <Breadcrumb aria-label="Default breadcrumb example">
         <Breadcrumb.Item
-          key={element.dateAdded.nanoseconds}
         >
           <Link 
-            to={`/userinterface/${element.dateAdded.nanoseconds}`}
-            onClick={() => handleRestructureBreadcrumb(element.dateAdded.nanoseconds)}
+            to={'/userinterface/root'}
             className='text-lg'
           >
-            {element.nameFolder.length > 20 ? 
-            `${element.nameFolder.slice(0,20)}...` :  element.nameFolder}
+            Home
           </Link>
-        </Breadcrumb.Item>)
-      })}
+        </Breadcrumb.Item>
 
-    </Breadcrumb>
+        {navigationHistory.length > 0 && navigationHistory.map((element) => {
+          return( 
+          <Breadcrumb.Item
+            key={element.dateAdded.nanoseconds}
+          >
+            <Link 
+              to={`/userinterface/${element.dateAdded.nanoseconds}`}
+              onClick={() => handleRestructureBreadcrumb(element.dateAdded.nanoseconds)}
+              className='text-lg'
+            >
+              {element.nameFolder.length > 20 ? 
+              `${element.nameFolder.slice(0,20)}...` :  element.nameFolder}
+            </Link>
+          </Breadcrumb.Item>)
+        })}
+
+      </Breadcrumb>
+
+    </div>
   )
 }
 
