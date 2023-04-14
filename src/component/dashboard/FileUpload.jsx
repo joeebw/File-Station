@@ -20,7 +20,7 @@ function FileUpload() {
         <input 
           type="file" 
           onChange={handleSubmit}
-          className='absolute right-0 top-0 bottom-0 left-0 w-full h-full opacity-0' 
+          className='absolute right-0 top-1 bottom-0 left-0 opacity-0' 
         />
       </Button>
   )

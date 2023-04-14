@@ -13,7 +13,7 @@ function NavigationToolbar({handleOpenModal}) {
         <BreadCrumbDashBoard/>
         <div className='flex gap-5'>
           <FileUpload/>
-          <Button color="success" className='h-[49px]' onClick={handleOpenModal}>
+          <Button color="success" className='h-[53px]' onClick={handleOpenModal}>
             <i className="fa-solid fa-folder-plus text-xl"></i>
           </Button>
           <Button color="success" onClick={() => {
