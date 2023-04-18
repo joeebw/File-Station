@@ -13,6 +13,7 @@ function FileItem() {
             isDirectory={false}
             url={file.url}
             key= {file.url}
+            fileId= {file.id}
             > 
             {file.nameFile}
           </ButtonDashBoard>

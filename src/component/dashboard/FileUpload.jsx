@@ -16,7 +16,7 @@ function FileUpload() {
         color='success' 
         className='relative bg-green-700 w-14 h-[48.9px] rounded-md cursor-pointer'
       >
-        <i className="text-2xl fa-solid fa-file-arrow-up text-white"></i>
+        <i className="text-xl fa-solid fa-file-arrow-up text-white"></i>
         <input 
           type="file" 
           onChange={handleSubmit}

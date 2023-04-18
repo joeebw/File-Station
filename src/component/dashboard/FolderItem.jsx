@@ -8,6 +8,7 @@ function FolderItem({folders, navigate, selectChildFolder}) {
         <ButtonDashBoard 
           key={folder.nameFolder}
           isDirectory={true}
+          folderId={folder.id}
           onClick={() => {
             navigate(`/userInterface/${folder.dateAdded.nanoseconds}`)
             selectChildFolder(folder)
