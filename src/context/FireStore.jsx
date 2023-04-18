@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useReducer, useState } from "react"
 import { 
+  doc,
   collection,
-  addDoc,
+  deleteDoc,
   Timestamp,
   getDocs,
   query,
-  where
+  where,
+  setDoc
 } from "firebase/firestore"; 
 import { db } from "../FIrebase";
 import { userAuth } from "./AuthContext";
@@ -24,7 +26,9 @@ const ACTIONS = {
   RESET_ELEMENTS: 'reset elements',
   CHANGE_CURRENT_FOLDER: 'change current',
   DELETE_FOLDERS: 'delete folders',
-  SELECT_CHILD_FOLDER: 'select child folder'
+  SELECT_CHILD_FOLDER: 'select child folder',
+  DELETE_FILE: 'delete a file',
+  DELETE_FOLDER: 'delete a folder'
 }
 
 // Reducer
@@ -33,7 +37,11 @@ function reducer(state, actions) {
     case ACTIONS.ADD_FOLDER:
       return {...state ,folders: [...state.folders, actions.payload]}
     case ACTIONS.ADD_FILE:
-      return {...state, files:[...state.files, actions.payload]}
+      return {...state, files:[...state.files, actions.payload]} 
+    case ACTIONS.DELETE_FILE:
+      return {...state, files:[...actions.payload]}  
+    case ACTIONS.DELETE_FOLDER:
+      return {...state, folders: [...actions.payload]}
     case ACTIONS.DELETE_FOLDERS:
       return {...state, folders:[]}
     case ACTIONS.RESET_ELEMENTS:
@@ -59,17 +67,20 @@ export function FireStoreProvider({children}) {
   })
   const {user} =  userAuth();
   const navigate = useNavigate();
-  
+
+
   async function handleAddFolder(nameFolder) {
     try {
       const timestamp = Timestamp.now();
+      const docRef = doc(collection(db, 'Folders'))
       const documentData = {
         nameFolder: nameFolder,
         createdBy: user.uid,
         dateAdded: timestamp,
-        parentFolder: state.currentFolder
+        parentFolder: state.currentFolder,
+        id: docRef.id
       }
-      const docRef = await addDoc(collection(db, 'Folders'), documentData)
+      await setDoc(docRef, documentData);
       dispatch({type: ACTIONS.ADD_FOLDER, payload: documentData})
 
     } catch (error) {
@@ -79,18 +90,33 @@ export function FireStoreProvider({children}) {
 
   async function handleAddFile(nameFile, url) {
     try {
+      const docRef = doc(collection(db, 'Files'))
       const documentData = {
         nameFile,
         createdBy: user.uid,
         parentFolder: state.currentFolder,
-        url
+        url,
+        id: docRef.id
       }
-      const docRef = await addDoc(collection(db, 'Files'), documentData)
+      await setDoc(docRef, documentData)
       dispatch({type: ACTIONS.ADD_FILE, payload: documentData})
-
     } catch (error) {
       console.log('Error adding document', error);
     }
+  }
+
+  // Remove folder from firestore
+  async function handleRemoveFolder(folderId) {
+    await deleteDoc(doc(db, "Folders", folderId));
+    const newFolders = state.folders.filter(folder => folder.id !== folderId)
+    dispatch({type:ACTIONS.DELETE_FOLDER, payload:newFolders})
+  }
+
+  // Remove file from Firestore
+  async function handleRemoveFile(fileId) {
+    await deleteDoc(doc(db, 'Files', fileId))
+    const newFiles = state.files.filter(file => file.id !== fileId)
+    dispatch({type:ACTIONS.DELETE_FILE, payload:newFiles})
   }
 
   useEffect(() => {
@@ -142,6 +168,8 @@ export function FireStoreProvider({children}) {
   const value = {
     handleAddFolder,
     handleAddFile,
+    handleRemoveFile,
+    handleRemoveFolder,
     folders: state.folders,
     files: state.files,
     childFolder: state.childFolder,
