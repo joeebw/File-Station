@@ -14,7 +14,7 @@ function FileUpload() {
   return (
       <Button 
         color='success' 
-        className='relative bg-green-700 w-14 h-[48.9px] rounded-md cursor-pointer'
+        className='relative bg-green-700 w-14 h-[48.9px] rounded-md cursor-pointer overflow-hidden'
       >
         <i className="text-xl fa-solid fa-file-arrow-up text-white"></i>
         <input 

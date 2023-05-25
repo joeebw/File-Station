@@ -1,15 +1,10 @@
 import { createContext, useContext, useEffect, useReducer, useState } from "react"
-import { 
-  doc,
-  collection,
-  deleteDoc,
-  Timestamp,
-  getDocs,
-  query,
-  where,
-  setDoc
-} from "firebase/firestore"; 
-import { db } from "../FIrebase";
+import {
+  addFolderInFirestore, 
+  addFileInFirestore, 
+  removeDocFromFirestore, 
+  getDocsFromFirestore 
+} from "../FIrebase";
 import { userAuth } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -70,72 +65,66 @@ export function FireStoreProvider({children}) {
 
 
   async function handleAddFolder(nameFolder) {
-    try {
-      const timestamp = Timestamp.now();
-      const docRef = doc(collection(db, 'Folders'))
-      const documentData = {
-        nameFolder: nameFolder,
-        createdBy: user.uid,
-        dateAdded: timestamp,
-        parentFolder: state.currentFolder,
-        id: docRef.id
-      }
-      await setDoc(docRef, documentData);
-      dispatch({type: ACTIONS.ADD_FOLDER, payload: documentData})
+    if (!nameFolder) return;
 
-    } catch (error) {
-      console.log('Error adding document', error);
+    const infoFolder = {
+      nameFolder,
+      user,
+      currentFolder: state.currentFolder
+    }
+
+    const documentData = await addFolderInFirestore(infoFolder);
+    if(documentData) {
+      dispatch({type: ACTIONS.ADD_FOLDER, payload: documentData})
     }
   }
 
   async function handleAddFile(nameFile, url) {
-    try {
-      const docRef = doc(collection(db, 'Files'))
-      const documentData = {
-        nameFile,
-        createdBy: user.uid,
-        parentFolder: state.currentFolder,
-        url,
-        id: docRef.id
-      }
-      await setDoc(docRef, documentData)
+    const infoFile = {
+      nameFile,
+      url,
+      user,
+      currentFolder: state.currentFolder
+    }
+
+    const documentData = await addFileInFirestore(infoFile);
+    if(documentData) {
       dispatch({type: ACTIONS.ADD_FILE, payload: documentData})
-    } catch (error) {
-      console.log('Error adding document', error);
     }
   }
 
   // Remove folder from firestore
   async function handleRemoveFolder(folderId) {
-    await deleteDoc(doc(db, "Folders", folderId));
-    const newFolders = state.folders.filter(folder => folder.id !== folderId)
-    dispatch({type:ACTIONS.DELETE_FOLDER, payload:newFolders})
+    const result = await removeDocFromFirestore('Folders', folderId);
+    if(result) {
+      const newFolders = state.folders.filter(folder => folder.id !== folderId);
+      dispatch({type:ACTIONS.DELETE_FOLDER, payload:newFolders});
+    }
   }
 
   // Remove file from Firestore
   async function handleRemoveFile(fileId) {
-    await deleteDoc(doc(db, 'Files', fileId))
-    const newFiles = state.files.filter(file => file.id !== fileId)
-    dispatch({type:ACTIONS.DELETE_FILE, payload:newFiles})
+    const result = await removeDocFromFirestore('Files', fileId);
+    if (result) {
+      const newFiles = state.files.filter(file => file.id !== fileId);
+      dispatch({type:ACTIONS.DELETE_FILE, payload:newFiles});
+    }
   }
 
   useEffect(() => {
     async function handleGetFoldersData(user) {
       if(!user) return;
-      try {
-        const q = query(collection(db, "Folders"), where("createdBy", "==", user.uid), 
-        where("parentFolder", "==", state.currentFolder));
-        const querySnapshot = await getDocs(q);
+
+      const infoFoldersData = {
+        user,
+        currentFolder: state.currentFolder,
+        collectionName: 'Folders'
+      }
+      const querySnapshot = await getDocsFromFirestore(infoFoldersData, navigate);
+      if (querySnapshot) {
         querySnapshot.forEach((doc) => {
           dispatch({type: ACTIONS.ADD_FOLDER, payload:doc.data()})
         });
-      } catch (error) {
-        switch (error.message) {
-          case 'Missing or insufficient permissions.':
-            return navigate('/');
-          default:
-            return console.log(error.message);
-        }
       }
     }
     handleGetFoldersData(user);
@@ -145,25 +134,35 @@ export function FireStoreProvider({children}) {
   useEffect(() => {
     async function handleGetFilesData(user) {
       if(!user) return;
-      try {
-        const q = query(collection(db, "Files"), where("createdBy", "==", user.uid), 
-        where("parentFolder", "==", state.currentFolder));
-        const querySnapshot = await getDocs(q);
+
+      const infoFilesData = {
+        user,
+        currentFolder: state.currentFolder,
+        collectionName: 'Files'
+      }
+
+      const querySnapshot = await getDocsFromFirestore(infoFilesData, navigate);
+
+      if (querySnapshot) {
         querySnapshot.forEach((doc) => {
           dispatch({type: ACTIONS.ADD_FILE, payload:doc.data()})
         });
-      } catch (error) {
-        switch (error.message) {
-          case 'Missing or insufficient permissions.':
-            return navigate('/');
-          default:
-            return console.log(error.message);
-        }
       }
     }
     handleGetFilesData(user);
   }, [user, state.currentFolder])
 
+  function resetUserContent() {
+    dispatch({type: ACTIONS.RESET_ELEMENTS})
+  }
+
+  function changeCurrentFolder(setFolder) {
+    dispatch({type: ACTIONS.CHANGE_CURRENT_FOLDER, payload: setFolder})
+  }
+
+  function selectChildFolder(setChildFolder) {
+    dispatch({type: ACTIONS.SELECT_CHILD_FOLDER, payload: setChildFolder})
+  }
 
   const value = {
     handleAddFolder,
@@ -174,13 +173,9 @@ export function FireStoreProvider({children}) {
     files: state.files,
     childFolder: state.childFolder,
     currentFolder: state.currentFolder,
-    resetUserContent: () => dispatch({type: ACTIONS.RESET_ELEMENTS}),
-    changeCurrentFolder: (setFolder) => {
-      dispatch({type: ACTIONS.CHANGE_CURRENT_FOLDER, payload: setFolder})
-      },
-    selectChildFolder: (setChildFolder) => {
-      dispatch({type: ACTIONS.SELECT_CHILD_FOLDER, payload: setChildFolder})
-    }
+    resetUserContent,
+    changeCurrentFolder,
+    selectChildFolder
   }
 
   return(
