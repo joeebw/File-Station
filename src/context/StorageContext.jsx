@@ -10,11 +10,13 @@ export function storageContext() {
   return useContext(STContext);
 }
 
+
+
 export function StorageProvider({children}) {
   const {user} = userAuth();
   const {handleAddFile, files} = fireStoreContext();
   const [progresspercent, setProgresspercent] = useState(0);
-  const [uploadingFile, setUploadingFile] = useState();
+  const [uploadingFile, setUploadingFile] = useState('');
 
   function restartProgressBar() {
     setProgresspercent(0);
@@ -26,11 +28,14 @@ export function StorageProvider({children}) {
     if (!file) return;
 
     const isRepeatedFile = files.find(fileItem => fileItem.nameFile === file.name);
+
     if (isRepeatedFile) {
       alert('You alredy have this file name');
       return;
-    } 
+    }
+    
     setUploadingFile(file.name);
+
     const storageRef = ref(storage, `files/${user.uid}/${file.name}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
     uploadTask.on("state_changed",

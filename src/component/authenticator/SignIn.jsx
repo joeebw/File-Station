@@ -1,5 +1,6 @@
 import { Card, Label, TextInput, Button, Alert, Spinner } from 'flowbite-react'
 import { useEffect, useRef, useState } from 'react';
+import { signInUserWithFirebase } from '../../FIrebase';
 import { Link, useNavigate } from 'react-router-dom'
 import { userAuth } from '../../context/AuthContext'
 
@@ -13,7 +14,9 @@ function SignIn() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    handleSignInUser(email.current.value, password.current.value);
+    const emailValue = email.current.value;
+    const passwordValue = password.current.value;
+    signInUserWithFirebase(emailValue, passwordValue, setError);
   }
 
   useEffect(() => {

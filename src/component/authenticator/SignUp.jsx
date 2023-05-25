@@ -1,23 +1,32 @@
 import { Card, Label, TextInput, Button, Alert,Spinner } from 'flowbite-react'
 import { useRef, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'
+import { createUserWithFirebase } from '../../FIrebase';
+import { Link, useNavigate } from 'react-router-dom'
 import { userAuth } from '../../context/AuthContext'
 
 function SignUp() {
   const email = useRef();
   const password = useRef();
   const confirmPassword = useRef();
-  const {handleCreateUser} = userAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = userAuth().error;
   
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (password.current.value !== confirmPassword.current.value) {
       return setError('Do not match passwords')
     }
-    handleCreateUser(email.current.value, password.current.value);
+    const emailValue = email.current.value;
+    const passwordValue = password.current.value;
+
+    const result = await createUserWithFirebase(emailValue, passwordValue, setError);
+
+    if (result) {
+      navigate('/userInterface/root');
+    }
+    
   }
 
   useEffect(() => {
