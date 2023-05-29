@@ -63,7 +63,6 @@ export function FireStoreProvider({children}) {
   const {user} =  userAuth();
   const navigate = useNavigate();
 
-
   async function handleAddFolder(nameFolder) {
     if (!nameFolder) return;
 

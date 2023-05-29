@@ -9,7 +9,7 @@ import UploadProgressBar from './UploadProgressBar';
 
 function UserInterface() {
   const [open, setOpen] =  useState(false);
-  const {changeCurrentFolder,currentFolder} = fireStoreContext();
+  const {changeCurrentFolder,currentFolder, resetUserContent} = fireStoreContext();
   const location = useLocation();
   const {folderId} = useParams();
   const navigate = useNavigate()
@@ -24,7 +24,6 @@ function UserInterface() {
     } 
 
     if (currentFolder === folderId) return
-
     changeCurrentFolder(`${folderId}`)
   }, [folderId])
 
