@@ -22,7 +22,6 @@ export const AuthProvider = ({children}) => {
         setError(null);
         return;
       }
-      navigate('/userInterface/root');
       setUser(user);
     });
     return unsubscribe;
