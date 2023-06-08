@@ -24,7 +24,6 @@ function SignUp() {
     const result = await createUserWithFirebase(emailValue, passwordValue, setError);
 
     if (result) {
-      console.log("it's true to navigate");
       navigate('/userInterface/root');
     }
     
