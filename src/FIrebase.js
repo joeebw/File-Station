@@ -40,7 +40,7 @@ export const storage = getStorage(app);
 
 export async function createUserWithFirebase(email, password, errorAlert) {
   try {
-    await createUserWithEmailAndPassword(auth, email, password);
+    return await createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
     switch(error.code) {
       case 'auth/weak-password':
